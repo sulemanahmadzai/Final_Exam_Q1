@@ -58,6 +58,7 @@ router.post("/", validateBlog, async (req, res) => {
   }
 });
 
+
 // Update blog
 router.put("/:id", validateBlog, async (req, res) => {
   try {
