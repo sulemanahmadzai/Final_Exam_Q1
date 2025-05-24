@@ -1,0 +1,49 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          cd services/auth-service && npm ci
+          cd ../blog-service && npm ci
+          cd ../comment-service && npm ci
+          cd ../profile-service && npm ci
+          cd ../api-gateway && npm ci
+
+      - name: Run tests
+        run: |
+          cd services/auth-service && npm test
+          cd ../blog-service && npm test
+          cd ../comment-service && npm test
+          cd ../profile-service && npm test
+
+      - name: Build Docker images
+        run: |
+          docker build -t scd_q1-auth-service ./services/auth-service
+          docker build -t scd_q1-blog-service ./services/blog-service
+          docker build -t scd_q1-comment-service ./services/comment-service
+          docker build -t scd_q1-profile-service ./services/profile-service
+          docker build -t scd_q1-api-gateway ./services/api-gateway
